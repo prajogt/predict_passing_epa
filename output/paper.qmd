@@ -1,0 +1,53 @@
+---
+title: "Predicting Quarterback Success: Passing EPA"
+author: 
+  - Timothius Prajogi
+thanks: "Code and data are available at: https://github.com/prajogt/predict_passing_epa ."
+date: today
+date-format: long
+abstract: ""
+format: pdf
+toc: true
+number-sections: true
+bibliography: references.bib
+header-includes:
+  \usepackage{placeins}
+---
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+#| echo: false
+
+#### Workspace setup ####
+library(knitr)
+library(tidyverse)
+```
+
+# Introduction
+
+
+
+# Data {#data}
+
+The data was retrieved from Harvard's CCES Dataverse database, using the `nflverse` [@citenflverse] package. 
+
+This data was downloaded, cleaned, parsed, analyzed, and visualized using R [@citeR], a statistical programming language, with package support from `tidyverse` [@citetidyverse], a collection of libraries which included the following packages that were utilized:
+
+-   `ggplot2` [@citeggplot]
+-   `dplyr` [@citedplyr]
+-   `readr` [@citereadr]
+-   `tibble` [@citetibble]
+
+For additional assistance with data storage, the `arrow` [@citearrow] was used and for report generation, the `knitr` [@citeknitr] package was used.
+
+The models were created using `tidymodels` [@citetidymodels]
+
+# Model
+
+# Reults
+
+# Discussion
+
+# References
