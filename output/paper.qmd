@@ -10,8 +10,6 @@ format: pdf
 toc: true
 number-sections: true
 bibliography: references.bib
-header-includes:
-  \usepackage{placeins}
 ---
 
 ```{r}
@@ -55,6 +53,7 @@ The models were created using `tidymodels` [@citetidymodels] and summarized usin
 
 # Load in data
 first_half <- read_parquet("data/first_half_season.parquet")
+testing_data <- read_parquet("data/first_half_testing.parquet")
 
 first_half |>
   head() |>
@@ -89,8 +88,10 @@ passing_epa_model <-
 The model that was created is: 
 
 $$
-y_i|\mu_i \sim \mbox{Normal}(\mu_i, \sigma)\\
-\mu_i = \beta_0+\beta_1 \times \mbox{completions}_i + \beta_2 \times \mbox{attempts}_i +\beta_3 \times \mbox{passing-yds}_i \\ + \beta_4 \times \mbox{passing-tds}_i +\beta_5 \times \mbox{interceptions}_i + \beta_6 \times \mbox{sacks}_i +\beta_7 \times \mbox{pacr}_i\\
+\begin{aligned}
+& y_i|\mu_i\sim \mbox{Normal}(\mu_i, \sigma)\\
+\mu_i & = \beta_0+\beta_1 \times \mbox{completions}_i + \beta_2 \times \mbox{attempts}_i +\beta_3 \times \mbox{passing-yds}_i \\ + &\beta_4 \times \mbox{passing-tds}_i +\beta_5 \times \mbox{interceptions}_i + \beta_6 \times \mbox{sacks}_i +\beta_7 \times \mbox{pacr}_i\\
+\end{aligned}
 $$
 
 Where $y$ is the predicted passing EPA of a player.
@@ -128,6 +129,8 @@ comparison |>
   )
 ```
 
+The model overall does well to predict players Passing EPA, with a mean squared error of 14.26, from the predictions shown in @tbl-modelpredictions.
+
 ```{r}
 #| message: false
 #| warning: false
@@ -143,7 +146,8 @@ modelsummary(
   )
 ```
 
+From @tbl-modelsummary we can see that completions and passing touchdowns has a strong positive correlation between passing EPA and attempts, interceptions, and sacks have a strong negative correlation between passing EPA. Surprisingly passing yards only has a small correlation with passing EPA, which can most likely be explained by the fact that gaining yards doesn't necessary result in touchdowns as strongly as passing touchdowns does.
 
-# Discussion
+Therefore, for the next half of the season to determine the success of the team it would be beneficial to look into their quarterback's passing completions, passing attempts, passing touchdowns, passing interceptions, and sacks to get a sense of the expected points per pass. Noting these stats each week would be helpful in seeing how well a team would do against a future opponent based on this predicted passing EPA. Going up against an opponent whose quarterback has been consistently delivering completions and passing touchdowns with a low amount of interceptions and sacks, would be troublesome for a quarterback with a lower predicted passing EPA.
 
 # References
