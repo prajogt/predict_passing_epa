@@ -23,6 +23,8 @@ header-includes:
 #### Workspace setup ####
 library(knitr)
 library(tidyverse)
+library(arrow)
+library(modelsummary)
 ```
 
 # Introduction
@@ -31,7 +33,7 @@ library(tidyverse)
 
 # Data {#data}
 
-The data was retrieved from Harvard's CCES Dataverse database, using the `nflverse` [@citenflverse] package. 
+The data was retrieved using the `nflverse` [@citenflverse] package, containing the various stats of an NFL player. 
 
 This data was downloaded, cleaned, parsed, analyzed, and visualized using R [@citeR], a statistical programming language, with package support from `tidyverse` [@citetidyverse], a collection of libraries which included the following packages that were utilized:
 
@@ -42,11 +44,105 @@ This data was downloaded, cleaned, parsed, analyzed, and visualized using R [@ci
 
 For additional assistance with data storage, the `arrow` [@citearrow] was used and for report generation, the `knitr` [@citeknitr] package was used.
 
-The models were created using `tidymodels` [@citetidymodels]
+The models were created using `tidymodels` [@citetidymodels] and summarized using `modelsummary` [@citemodelsummary].
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-nfldatafirsthalf
+#| tbl-cap: "2023 NFL data (Weeks 1-9)"
+
+# Load in data
+first_half <- read_parquet("data/first_half_season.parquet")
+
+first_half |>
+  head() |>
+  kable(
+    col.names = c("Passing EPA", "Completions", "Attempts", "Passing Yards", "Passing Touchdowns", "Interceptions", "Sacks", "PACR"),
+    booktabs = TRUE
+  )
+```
+
+As explained by `nflverse`'s data dictionary [@citenflverse], passing EPA is the total expected points added on pass attempts and sacks, completions were the amount of passes that were completed, attempts were the amount of pass attempts made, passing yards are the amount of yards gained on pass plays, passing touchdowns are the amount of passing touchdowns, interceptions were the amount of interceptions thrown, the sacks are the number of times the player was sacked, and PACR is the Passing (yards) Air (yards) Conversion Ratio which is the number of passing yards per air yards thrown per game
+
+As the purpose of this report is to create a model to predict passing EPA, theses features were selected as they are believed to be strongly correlated with passing EPA, meaning using them would create a better and more accurate model.
+
+The original dataset was filtered to only include statistics from the 2023 season, separated into the first half of the season (weeks 1-9) and the second half of the season. Since passing EPA concerns the quarterback's stats, we only considered the rows which pertained to quarterbacks.
+
 
 # Model
 
-# Reults
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+#| echo: false
+
+# Load in models
+passing_epa_model <-
+  readRDS(file = "data/passing_epa_model.rds")
+
+
+```
+
+The model that was created is: 
+
+$$
+y_i|\mu_i \sim \mbox{Normal}(\mu_i, \sigma)\\
+\mu_i = \beta_0+\beta_1 \times \mbox{completions}_i + \beta_2 \times \mbox{attempts}_i +\beta_3 \times \mbox{passing-yds}_i \\ + \beta_4 \times \mbox{passing-tds}_i +\beta_5 \times \mbox{interceptions}_i + \beta_6 \times \mbox{sacks}_i +\beta_7 \times \mbox{pacr}_i\\
+$$
+
+Where $y$ is the predicted passing EPA of a player.
+
+This model aims to use the amount of completions, attempts, passing yards, passing touchdowns, interceptions, sacks and PACR of a player to predict their passing EPA. Since passing EPA is defined as the expected points added, the more completions, passing yards, and passing touchdowns that were made it is reasonable to expect that the amount of points added would also increase. Then the amount of interceptions and sacks that were made would most likely mean that more of the passes that the players made ended up not contributing to the amount of points that they gained. Attempts is included as the attempts the quarterback makes to pass correlates with the offensive effectiveness of the team. Finally the PACR provides insights as to the effectiveness of a pass, which would correlate to the overall passing EPA of a player.
+
+To ensure that we are not over-fitting, the dataset of the was split into 80% for training and 20% for testing. For 254 observations for training and 64 observations for testing.
+
+# Results
+
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-modelpredictions
+#| tbl-cap: "Predicted Passing EPA of Testing Data"
+
+# Predict
+predictions_epa <- predict(passing_epa_model, testing_data)
+actual <- testing_data$passing_epa
+comparison <- data.frame(predicted = predictions_epa$.pred, actual = actual) |>
+  mutate(error = actual - predicted)
+
+comparison$squared_error <- comparison$error ^ 2
+
+RSS <- sum(comparison$squared_error)
+
+MSE <- mean(comparison$squared_error)
+
+comparison |> 
+  head() |>
+  kable(
+    col.names = c("Predicted", "Actual", "Error", "Squared Error"),
+    booktabs = TRUE
+  )
+```
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false
+#| label: tbl-modelsummary
+#| tbl-cap: "Explaining the Passing EPA given their completions, attempts, passing yards, passing touchdowns, interceptions, sacks and PACR"
+
+
+modelsummary(
+  list(
+    "Passing EPA" = passing_epa_model
+  )
+  )
+```
+
 
 # Discussion
 

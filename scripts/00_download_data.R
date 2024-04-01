@@ -21,7 +21,7 @@ qb_regular_season_stats <-
 # Select relevant features
 qb_regular_season_stats <-
   qb_regular_season_stats |>
-  select(week, passing_epa, completions, attempts,  passing_yards, passing_tds, interceptions, sacks, pacr)
+  select(week, recent_team, passing_epa, completions, attempts,  passing_yards, passing_tds, interceptions, sacks, pacr)
 
 
 # Save to csv
